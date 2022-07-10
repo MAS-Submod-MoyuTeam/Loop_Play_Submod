@@ -1,2 +1,4 @@
-# MonikaExampleSubmod
-莫妮卡的示例mod/Monika's example submod
+# Loop Play
+MAS的子模组，循环播放自定义bgm
+
+论坛链接：
