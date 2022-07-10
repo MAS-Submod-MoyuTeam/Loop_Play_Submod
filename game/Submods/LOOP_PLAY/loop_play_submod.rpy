@@ -19,6 +19,7 @@ init -989 python:
 init python:
     class MusicQueue(object):
         playlist = []
+        paused = False
         currplaying = ""
         """docstring for ClassName"""
         def __init__(self):
@@ -78,6 +79,31 @@ init python:
             musicqueue=newlist1+newlist2
             return musicqueue
 
+        def Now_Music_List(self, song=self.currplaying):
+            """
+            获取以指定音乐为开头的list
+            """
+            musicqueue = []
+            currplaying = self.Get_CurrPlaying()
+            pos = self.playlist.index(song)
+            length = len(self.playlist)
+            if pos>length:
+                pos = length
+
+            newlist1 = self.playlist[pos:length]
+            newlist2 = self.playlist[0:pos]
+            musicqueue = newlist1+newlist2
+            #i = pos + 1
+            #if i > length:
+            #    i = 1
+            #while i <= length:
+            #    musicqueue.append(self.playlist[i-1])
+            #    i = i + 1
+            #i=1
+            #while i < pos:
+            #    musicqueue.append(self.playlist[i-1])
+            #    i = i + 1
+            return musicqueue
         
         def Prev_Music(self):
             """
@@ -95,13 +121,30 @@ init python:
             self.Music_Play_List(song=mlist)
             return self.Get_CurrPlaying()
 
-        def Play_Music_Now(self):
+        def Play_Music_Now(self, song):
             """
-            立刻播放音乐
+            立刻播放指定音乐
             """
-            mlist = self.Music_GetCatchSaveList()
+            mlist = self.Now_Music_List(song)
             self.Music_Play_List(song=mlist)
             return self.Get_CurrPlaying()
+
+        def Get_ShortName(self):
+            """
+            返回短名称音乐列表
+            """
+            dirs = os.listdir(renpy.config.basedir+ "/custom_bgm/")
+            catched = []
+            file_type = ["mp3", "wav", "ogg"]
+            for file_name in dirs:
+                playable = False
+                for type in file_type:
+                    if file_name.find(type) != 1:
+                        playable = True
+                        break
+                if playable == True:
+                    catched.append((file_name).replace("\\","/"))
+            return catched
 
         def Music_GetCatchSaveList(self):
             """
@@ -120,7 +163,7 @@ init python:
                     catched.append((renpy.config.basedir + "/custom_bgm/" + file_name).replace("\\","/"))
             return catched
         
-        def Music_Play_List(a, song, fadein=1.2, loop=True, set_per=False, fadeout=1.2, if_changed=False):
+        def Music_Play_List(self, song, fadein=1.2, loop=True, set_per=False, fadeout=1.2, if_changed=False):
             """
             播放已缓存列表
             IN:
