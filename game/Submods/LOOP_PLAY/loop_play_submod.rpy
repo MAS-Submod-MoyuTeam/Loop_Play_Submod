@@ -3,7 +3,7 @@ init -990 python:
         author="P",
         name="Loop Play",
         description="允许你循环播放MAS内的音乐",
-        version='1.0.1'
+        version='0.1.0'
     )
 
 init -989 python:
@@ -20,6 +20,7 @@ init python:
     class MusicQueue(object):
         playlist = []
         paused = False
+        loopmode = False
         currplaying = ""
         """docstring for ClassName"""
         def __init__(self):
@@ -28,6 +29,10 @@ init python:
         def Get_CurrPlaying(self):
             self.currplaying = renpy.music.get_playing()
             return self.currplaying
+
+        def Pause(self):
+            renpy.music.set_pause(not self.paused)
+            self.paused = not self.paused
 
         def Next_Music_List(self):
             """
@@ -79,7 +84,7 @@ init python:
             musicqueue=newlist1+newlist2
             return musicqueue
 
-        def Now_Music_List(self, song=self.currplaying):
+        def Now_Music_List(self, song):
             """
             获取以指定音乐为开头的list
             """
@@ -109,22 +114,31 @@ init python:
             """
             播放上一首音乐
             """
-            mlist = self.Prev_Music_List()
-            self.Music_Play_List(song=mlist)
-            return self.Get_CurrPlaying()
+            if not self.loopmode:
+                self.Play_Music_Now(self.playlist[0])
+                self.loopmode=True
+            else:
+                mlist = self.Prev_Music_List()
+                self.Music_Play_List(song=mlist)
+                return self.Get_CurrPlaying()
         
         def Next_Music(self):
             """
             播放下一首音乐
             """
-            mlist = self.Next_Music_List()
-            self.Music_Play_List(song=mlist)
-            return self.Get_CurrPlaying()
+            if not self.loopmode:
+                self.Play_Music_Now(self.playlist[0])
+                self.loopmode=True
+            else:
+                mlist = self.Next_Music_List()
+                self.Music_Play_List(song=mlist)
+                return self.Get_CurrPlaying()
 
         def Play_Music_Now(self, song):
             """
             立刻播放指定音乐
             """
+            self.loopmode=True
             mlist = self.Now_Music_List(song)
             self.Music_Play_List(song=mlist)
             return self.Get_CurrPlaying()
@@ -191,13 +205,7 @@ init python:
                     fadein=fadein,
                     fadeout=fadeout,
                     if_changed=if_changed
-                )
-                songs.current_track = song
-                songs.selected_track = song
-
-            if set_per:
-                store.persistent.current_track = song
-    
+                )    
     lp_queue = MusicQueue()
 
 init 5 python:
@@ -221,6 +229,8 @@ label loop_play:
             $ lp_queue.Prev_Music()
         "下一首":
             $ lp_queue.Next_Music()
+        "暂停":
+            $ lp_queue.Pause()
     
     "OK - [lp_queue.currplaying]"
         
