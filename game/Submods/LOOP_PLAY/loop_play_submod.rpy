@@ -1,6 +1,6 @@
 init -990 python:
     store.mas_submod_utils.Submod(
-        author="P and joyful.heart",
+        author="P and heart",
         name="Loop Play",
         description="允许你循环/随机播放MAS内的音乐",
         version='0.5.0'
