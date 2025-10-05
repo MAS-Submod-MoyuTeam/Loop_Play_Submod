@@ -273,12 +273,13 @@ init python:
     
     # 启动时自动播放
     def auto_resume_music():
-        if persistent._loop_play_shuffle_mode:
-            # 随机播放模式：从随机列表中选择第一首
-            lp_queue.Play_Music_Now(lp_queue.shuffled_playlist[0])
-        else:
-            # 顺序播放模式：从原始列表中选择第一首
-            lp_queue.Play_Music_Now(lp_queue.playlist[0])
+        if persistent._loop_play_auto_resume:
+            if persistent._loop_play_shuffle_mode:
+                # 随机播放模式：从随机列表中选择第一首
+                lp_queue.Play_Music_Now(lp_queue.shuffled_playlist[0])
+            else:
+                # 顺序播放模式：从原始列表中选择第一首
+                lp_queue.Play_Music_Now(lp_queue.playlist[0])
     
     # 注册启动时的回调
     config.start_callbacks.append(auto_resume_music)
@@ -296,7 +297,9 @@ init 5 python:
         restartBlacklist=True
         )
 
-label loop_play:                               
+label loop_play:   
+    $ shuffle_text = "开启" if lp_queue.shuffle_mode else "关闭"
+    $ auto_resume_text = "开启" if persistent._loop_play_auto_resume else "关闭"                            
     menu:
         "更新播放队列":
             # 保存当前的随机播放状态
@@ -314,11 +317,17 @@ label loop_play:
             jump loop_play
         "上一首":
             $ lp_queue.Prev_Music()
+            "OK - [lp_queue.currplaying]"
+            jump loop_play
         "下一首":
             $ lp_queue.Next_Music()
-        "暂停":
+            "OK - [lp_queue.currplaying]"
+            jump loop_play
+        "播放/暂停":
             $ lp_queue.Pause()
-        "随机播放: [ '开启' if lp_queue.shuffle_mode else '关闭' ]":
+            "OK - [lp_queue.currplaying]"
+            jump loop_play
+        "随机播放: [shuffle_text]":
             $ lp_queue.Toggle_Shuffle()
             if lp_queue.shuffle_mode:
                 $ lp_queue.Next_Music()
@@ -326,7 +335,7 @@ label loop_play:
             else:
                 $ lp_queue.Next_Music()
                 "已关闭随机播放模式"
-        "启动时自动播放: [ '开启' if persistent._loop_play_auto_resume else '关闭' ]":
+        "自启动播放: [auto_resume_text]":
             $ persistent._loop_play_auto_resume = not persistent._loop_play_auto_resume
             if persistent._loop_play_auto_resume:
                 "已开启启动时自动播放音乐"
@@ -334,6 +343,8 @@ label loop_play:
             else:
                 "已关闭启动时自动播放音乐"
                 jump loop_play
+        "关闭":
+            return
     
     "OK - [lp_queue.currplaying]"
         
